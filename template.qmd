@@ -26,7 +26,7 @@ using RainwaterHarvesting         # <2>
 Next, we specify the path to the rainfall data file and read it in.
 
 ```{julia}
-filepath = "data/1.txt" # <1>   
+filepath = "data/3.txt" # <1>   
 rainfall_data = RainfallData(filepath) # <2>
 ```
 
@@ -50,7 +50,7 @@ plot(rainfall_data) # <1>
 
 ### Discussion
 
-*Insert discussion here*
+*After the data-cleaning process, the remaining years are 1985, 2004, 2002, 2001, 2013, 2015, 1991, 1976, 1988, and 2008, representing a substantial 30-year span. Within this timeframe, significant droughts were documented in 1988, 2002, and the extended period from 2012 to 2018. My dataset captures half of the eight critical droughts identified. However, the absence of data from certain major drought years could lead to flawed estimations of resource allocation. This data gap may compromise preparedness for impending droughts and result in severe ecological consequences.*
 
 ## Understanding the Theoretical Model
 
@@ -68,36 +68,22 @@ $$
 - $Q_t$ is the volume of water added to the tank at time $t$
 - $C_t$ is the volume of water consumed at time $t$
 - $V_\text{max}$: the maximum volume of the tank
+### Discussion
 
-### Inflow ($Q_t$)
+*A significant limitation of the model lies in its assumption that water consumption is uniform across all households. To mitigate this shortcoming, a compensatory coefficient (x) can be introduced to reflect variations in usage, thereby enhancing the model's precision.*
+### Modified Mass Balance Equation
 
-Inflow is calculated as
-
-$$
-Q_t = \eta \times A \times \max(P_t - F, 0).
-$$
-
-- $\eta$: the runoff coefficient, which accounts for losses due to evaporation, spilling, etc.
-- $A$: the area of the roof (we will use square meters)
-- $P_t$: the precipitation at time $t$ (we will use millimeters per day)
-- $F$: the first flush volume (we will use millimeters). The first flush volume is often discarded, so that each time it rains the first bit of water (which is usually dirty) is not used (see [here](https://rainwaterharvesting.tamu.edu/pre-storage-treatment/) for more details).
-
-### Consumption
-
-Consumption is modeled as:
+The mass balance model for the rainwater tank is given by:
 
 $$
-C_t = \begin{cases}
-    74.1 & \quad \text{day of year} > 150 \\
-    0 & \quad \text{day of year} \leq 150
-\end{cases}
+V_{t+1} = V_t + Q_t - x*C_t | 0 \leq V_t \leq V_\text{max}
 $$
 
-This makes two major assumptiuons.
-First, the household begins using water from the tank after the 150th day of the year.
-This is based on the idea that the rainy season lasts for about the first 150 days of the year, and so they may have other sources of water before then.
-The second assumption is that each household consumes 74.1 liters per day during the dry season.
-How does this compare to your household's water usage?
+- $V_t$: the volume of water in the tank at time $t$
+- $Q_t$ is the volume of water added to the tank at time $t$
+- $C_t$ is the volume of water consumed at time $t$
+- $V_\text{max}$: the maximum volume of the tank
+- $x$: the variations in usage
 
 ## Model Implementation and Testing
 
@@ -121,6 +107,10 @@ param = ModelParameters(          # <1>
 3. The roof area ($A$) is the area of the roof that the rain falls on.
 4. The first flush volume ($V_f$) is the volume of rain that is discarded because it is dirty.
 5. The tank capacity ($V_\text{max}$) is the maximum volume of the tank.
+
+### Discussion
+
+*Over a span of 49 years, system failures occurred during 13, equating to a reliability rate of 73%. While this level of dependability offers meaningful insight, it underscores room for improvement. Adjustments to the first flush and roof area yielded predominantly favorable outcomes, though some partial failures persisted. A notable constraint of the model is its omission of data from certain drought years. By incorporating additional data points, a more comprehensive and precise model tailored to the conditions in Ceará, Brazil, could be developed. This enhancement would facilitate a more robust analysis, encompassing all significant drought events and enabling superior resource allocation strategies.*
 
 ### Running the Simulation for One Year
 
@@ -162,3 +152,7 @@ println("Number of years with failures: ", sum(any_failures), " out of ", length
 2. We run the simulation for each year.
 3. We check if any failures occurred.
 4. We print the number of years with failures and the total number of years.
+
+### Discussion
+
+*To better reflect the socio-economic and environmental conditions of Ceará, Brazil, modifications were made to the first flush and roof area parameters. In economically disadvantaged regions, houses typically feature reduced roof dimensions. Additionally, the lower standard of water quality necessitates an enlarged first flush system to ensure adequate compensation and filtration.*
